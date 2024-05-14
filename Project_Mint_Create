@@ -1,1 +1,49 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract LoyaltyPoints is ERC20 {
+  // Address of the program owner (who can award and burn points)
+  address private owner;
+
+  // Constructor to set the token name and program owner
+  constructor(string memory name) ERC20(name, "LP") {
+    // Set the program owner (replace with your address)
+    owner = msg.sender;
+  }
+
+  // Modifier to restrict functions only to the program owner
+  modifier onlyOwner() {
+    require(msg.sender == owner, "Only program owner can call this function");
+    _;
+  }
+
+  // Award loyalty points to a customer by minting new tokens
+  function awardPoints(address customer, uint256 amount) public onlyOwner {
+    // Mint the specified amount of tokens to the customer's address
+    _mint(customer, amount);
+  }
+
+  // Burn points used by a customer by burning tokens from their balance
+  function burnPoints(address customer, uint256 amount) public onlyOwner {
+    // Burn the specified amount of tokens from the customer's address
+    _burn(customer, amount);
+  }
+
+  // Standard transfer function allowing customers to transfer their points (if applicable)
+  function transfer(address recipient, uint256 amount) public override returns (bool) {
+    require(recipient != address(0), "ERC20: transfer to the zero address");
+    _transfer(msg.sender, recipient, amount);
+    return true;
+  }
+
+  // Standard transferFrom function allowing customers to approve spending of their points (if applicable)
+  function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+    require(recipient != address(0), "ERC20: transfer to the zero address");
+    _transfer(sender, recipient, amount);
+    _approve(sender, msg.sender, allowance(sender, msg.sender) - amount);
+    return true;
+  }
+}
 
